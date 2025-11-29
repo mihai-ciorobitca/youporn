@@ -3,6 +3,7 @@ from utils import get_username, get_verification_code
 import time
 from browser_manager import AsyncBrowserManager
 
+
 async def sign_up(page, username, password):
     await page.goto("https://www.youporn.com/", wait_until="networkidle")
 
@@ -15,37 +16,41 @@ async def sign_up(page, username, password):
     await page.wait_for_selector("#cookie_consent_wrapper", timeout=10000)
     print("Cookie wrapper detected.")
 
-    await page.evaluate("""
+    await page.evaluate(
+        """
         document.querySelectorAll('*').forEach(el => {
             if (getComputedStyle(el).zIndex > 1000) {
                 el.style.pointerEvents = 'none'
             }
         })
-    """)
+    """
+    )
     print("Overlay click-blockers disabled.")
 
-    await page.evaluate("""
+    await page.evaluate(
+        """
         const btn = document.querySelector('#consent_accept_all')
         if (btn) {
             btn.click()
         } else {
             console.log("Cookie button not found")
         }
-    """)
+    """
+    )
     print("Cookie consent accepted via JS.")
 
     await page.goto("https://www.youporn.com/register")
 
-    email_input = page.locator("input[name='email']")
+    email_input = page.locator("#registration_email")
     await email_input.wait_for(state="visible")
     await email_input.fill(username)
 
-    password_input = page.locator("input[name='password']")
+    password_input = page.locator("#registration_password")
     await password_input.wait_for(state="visible")
     await password_input.fill(password)
 
-    signup_btn = page.locator(".btnSignup")
-    await signup_btn.click()
+    # signup_btn = page.locator(".btnSignup")
+    # await signup_btn.click()
 
     # await page.wait_for_load_state("networkidle")
 
@@ -96,11 +101,12 @@ async def sign_up(page, username, password):
 
     # input("Press ENTER to close...")
 
+
 async def sign_in(page, username, password):
-    await page.goto("https://www.redtube.com/", wait_until="networkidle")
+    await page.goto("https://www.youporn.com/", wait_until="networkidle")
 
     try:
-        age_button = page.locator("#btn_agree")
+        age_button = page.locator("#accessButton")
         await age_button.click()
     except:
         print("Age confirmation button not found or already handled.")
@@ -108,34 +114,38 @@ async def sign_in(page, username, password):
     await page.wait_for_selector("#cookie_consent_wrapper", timeout=10000)
     print("Cookie wrapper detected.")
 
-    await page.evaluate("""
+    await page.evaluate(
+        """
         document.querySelectorAll('*').forEach(el => {
             if (getComputedStyle(el).zIndex > 1000) {
                 el.style.pointerEvents = 'none'
             }
         })
-    """)
+    """
+    )
     print("Overlay click-blockers disabled.")
 
-    await page.evaluate("""
+    await page.evaluate(
+        """
         const btn = document.querySelector('#consent_accept_all')
         if (btn) {
             btn.click()
         } else {
             console.log("Cookie button not found")
         }
-    """)
+    """
+    )
     print("Cookie consent accepted via JS.")
 
-    await page.goto("https://www.redtube.com/login")
+    await page.goto("https://www.youporn.com/login")
 
-    email_input = page.locator("input[name='email']")
+    email_input = page.locator("#js_username_input")
     await email_input.type(username, delay=100)
 
-    password_input = page.locator("input[name='password']")
+    password_input = page.locator("#js_password_input")
     await password_input.type(password, delay=100)
 
-    signup_btn = page.locator("#login_submit")
+    signup_btn = page.locator("#js_login_btn")
     await signup_btn.click()
 
     await page.wait_for_load_state("networkidle")
@@ -148,17 +158,16 @@ async def sign_in(page, username, password):
     except Exception:
         print("TOS button not found or already accepted.")
 
-    profile_btn = page.locator("#header_user_avatar")       
+    profile_btn = page.locator("#header_user_avatar")
     await profile_btn.click()
 
     await page.wait_for_load_state("networkidle")
 
 
 async def main():
-    username = await get_username() 
+    username = await get_username()
     password = "SecretPassword123!"
     async with AsyncBrowserManager(headless=False) as page:
-        stealth_sync(page)
         username = await sign_up(page, username, password)
         if not username:
             print("Sign-up failed, skipping further actions.")
@@ -166,16 +175,17 @@ async def main():
             time.sleep(5)
         print(f"Account created: {username} | {password}")
 
-    # async with AsyncBrowserManager(headless=False) as page:
-    #     await sign_in(page, username, password)
+        # async with AsyncBrowserManager(headless=False) as page:
+        #     await sign_in(page, username, password)
 
         screenshot_path = f"screenshots/{username}_screenshot.png"
         await page.screenshot(path=screenshot_path)
         print(f"Screenshot saved to {screenshot_path}")
 
+
 async def runner():
     await main()
 
+
 if __name__ == "__main__":
     asyncio.run(runner())
-
